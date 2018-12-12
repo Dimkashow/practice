@@ -1,3 +1,57 @@
+'''
+Учебно-вычислительна практика
+Данная программа высчитывает маршрут для парусной гонки
+Более подробное описание находится в отчете.
+
+Переменные:
+dir_data - массив диапазонов
+data - матрица координат
+tot_dis - общая дистанция
+angle - угол поворота
+total_len - пройденная дистанция
+total_time - пройденное время
+leg - кол-во курсов
+no_pen - курсы без штрафов
+tg - тангенс угла
+speed - массив скоростей
+
+Тестовый пример:
+45 10 0.1 6
+45 0.5 90 0.75 135 0.67
+M1 15 10
+M2 25 20
+M3 22 30
+M4 5 25
+M5 10 15
+M6 10 10
+0 0 0 0
+===============================================================================
+Гонка 1 состоит из 6 шагов
+Длина дистанции 58.48 nm
+───────────────────────────────────────────────────────────────────────────────
+Шаг 1 из отметки M1 к M2 ⇒ Направление: 45.0 Расстояние: 14.14 nm
+Курс 1 > Скорость:  5.0 Направление: 90.0 Расстояние:10.0 nm
+Курс 2 > Скорость:  5.0 Направление: 0.0 Расстояние:10.0 nm
+
+Шаг 2 из отметки M2 к M3 ⇒ Направление: 343.3 Расстояние: 10.44 nm
+Курс 3 > Скорость: 5.0 Направление: 343.3 Расстояние: 10.44
+
+Шаг 3 из отметки M3 к M4 ⇒ Направление: 253.6 Расстояние: 17.72 nm
+Курс 4 > Скорость: 6.7 Направление: 253.6 Расстояние: 17.72
+
+Шаг 4 из отметки M4 к M5 ⇒ Направление: 153.4 Расстояние: 11.18 nm
+Курс 5 > Скорость: 7.5 Направление: 153.4 Расстояние: 11.18
+
+Шаг 5 из отметки M5 к M6 ⇒ Направление: 180.0 Расстояние: 5.0 nm
+Курс 6 > Скорость: 6.7 Направление: 180 Расстояние: 5.0
+
+───────────────────────────────────────────────────────────────────────────────
+Гонка 1 была 64.34 nm длиной с сменой 6 курсов
+Оценочная продолжительность гонки 11.47 часов с 0.5 часа штрафа
+===============================================================================
+'''
+
+
 # Импорт библиотек для вычислений
 from math import sqrt,atan,degrees,tan,radians
 
@@ -8,7 +62,7 @@ def start():
     need_data = ('Введите: \n'
                  'Направоение ветра, скорость ветра, \
 штрафное время, кол-во отметок N\n')
-    dir,speed,penalty,N = map(float,input(need_data).split())
+    dir,speed_w,penalty,N = map(float,input(need_data).split())
     speed,nomer,N = [0,0,0],1,int(N)
     need_data = ('Контрольный угол, контрольный коэффицент скорости\n')
     point_a,speed[0] = map(float,input(need_data).split())
@@ -89,28 +143,36 @@ def start():
             katet2 = katet1 * tan(radians(m))
             dis = round(sqrt(katet1 ** 2 + katet2 ** 2),2)
             print('Курс ' + str(leg) + ' > Скорость: ',
-                  str(speed[check(angle + m,dir_data) - 1] * 10),end=' ')
+                  str(speed[check(angle + m,dir_data) - 1] * speed_w),end=' ')
+            if angle + m > 360:
+                angle-=360
+            if angle + m < 0:
+                angle+=360
             print('Направление: ' + str(angle + m)
                   + ' Расстояние:' + str(dis) + ' nm')
             leg += 1
-            total_time += dis / (speed[check(angle + m,dir_data) - 1] * 10)
+            total_time += dis / (speed[check(angle + m,dir_data) - 1] * speed_w)
             print('Курс ' + str(leg) + ' > Скорость: ',
-                  str(speed[check(angle - m,dir_data) - 1] * 10),end=' ')
+                  str(speed[check(angle - m,dir_data) - 1] * speed_w),end=' ')
+            if angle - m > 360:
+                angle-=360
+            if angle - m < 0:
+                angle+=360
             print('Направление: ' + str(angle - m)
                   + ' Расстояние:' + str(dis) + ' nm')
             # Добавление результа к общему значению
             total_len = total_len + dis * 2
-            total_time += dis / (speed[check(angle - m,dir_data) - 1] * 10)
+            total_time += dis / (speed[check(angle - m,dir_data) - 1] * speed_w)
         else:
             # Если угол не в контрольной зоне, делается простой выввод 
             print('Расстояние: ' + str(round(distance(x,y,x_n,y_n),2)) + ' nm')
             print('Курс ' + str(leg) + ' > Скорость: ',end='')
-            print(str(speed[result - 1] * 10) + ' Направление: '
+            print(str(speed[result - 1] * speed_w) + ' Направление: '
                   + str(angle) + ' Расстояние: ' +
                   str(round(distance(x,y,x_n,y_n),2)))
             # Добавление результа к общему значению
             total_len += distance(x,y,x_n,y_n)
-            total_time += distance(x,y,x_n,y_n) / (speed[result - 1] * 10)
+            total_time += distance(x,y,x_n,y_n) / (speed[result - 1] * speed_w)
         leg += 1
         print()
     print(79 * '─')
@@ -119,7 +181,7 @@ def start():
         + ' nm длиной с сменой ' + str(leg - 1) + ' курсов')
     print('Оценочная продолжительность гонки ' + str(
         round(total_time + penalty * (leg - 2 - no_pen),2)) + ' часов с '
-          + str(penalty * (leg - 2 - no_pen)) + ' часа штрафа')
+          + str(round(penalty * (leg - 2 - no_pen),2)) + ' часа штрафа')
     print(79 * '=')
 
 
