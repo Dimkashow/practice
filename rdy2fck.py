@@ -143,7 +143,7 @@ def start(a):
             storona2 = distance(x,y,x_n,y_n)
             s = storona2/sin(radians(angle2))
             # Решение треугольника теорема синусов
-            storona1,storona3=s*sin(radians(angle1)),s*sin(radians(angle3))
+            storona1,storona3=abs(s*sin(radians(angle1))),abs(s*sin(radians(angle3)))
             if dir_data[0][0]<0:
                 a = dir_data[0][0]+360
             else:
