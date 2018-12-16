@@ -53,17 +53,17 @@ M6 10 10
 
 
 # Импорт библиотек для вычислений
-from math import sqrt,atan,degrees,tan,radians
+from math import sqrt,atan,degrees,tan,radians,sin
 
 # Стартовая функция
-def start():
-
+def start(a):
+    nomer = a
     # Ввод изначальных данных 
     need_data = ('Введите: \n'
                  'Направоение ветра, скорость ветра, \
 штрафное время, кол-во отметок N\n')
     dir,speed_w,penalty,N = map(float,input(need_data).split())
-    speed,nomer,N = [0,0,0],1,int(N)
+    speed,N = [0,0,0],int(N)
     need_data = ('Контрольный угол, контрольный коэффицент скорости\n')
     point_a,speed[0] = map(float,input(need_data).split())
 
@@ -135,34 +135,36 @@ def start():
 
         # Проверка не совпадает ли угл с контрольным
         if result==0:
+            print('Расстояние: ' + str(round(distance(x,y,x_n,y_n),2)) + ' nm')
             # Расчет объезда
-            print('Расстояние: ' +
-                  str(round(distance(x,y,x_n,y_n),2)) + ' nm')
-            m = max(abs(angle - dir_data[0][0]),abs(angle - dir_data[0][1]))
-            katet1 = distance(x,y,x_n,y_n) / 2
-            katet2 = katet1 * tan(radians(m))
-            dis = round(sqrt(katet1 ** 2 + katet2 ** 2),2)
+            angle1 = dir_data[0][1]-angle
+            angle2 = point_a*2
+            angle3 = 180-angle1-angle2
+            storona2 = distance(x,y,x_n,y_n)
+            s = storona2/sin(radians(angle2))
+            # Решение треугольника теорема синусов
+            storona1,storona3=s*sin(radians(angle1)),s*sin(radians(angle3))
+            if dir_data[0][0]<0:
+                a = dir_data[0][0]+360
+            else:
+                a = dir_data[0][0]
+            if dir_data[0][1]>360:
+                b = dir_data[0][1]-360
+            else:
+                b = dir_data[0][1]
+            # Выввод результатов
             print('Курс ' + str(leg) + ' > Скорость: ',
-                  str(speed[check(angle + m,dir_data) - 1] * speed_w),end=' ')
-            if angle + m > 360:
-                angle-=360
-            if angle + m < 0:
-                angle+=360
-            print('Направление: ' + str(angle + m)
-                  + ' Расстояние:' + str(dis) + ' nm')
-            leg += 1
-            total_time += dis / (speed[check(angle + m,dir_data) - 1] * speed_w)
+                  str(speed[0] * speed_w),end=' ')
+            print('Направление: ' + str(b)
+                  + ' Расстояние:' + str(round(storona3,2)) + ' nm')
+            leg+=1
             print('Курс ' + str(leg) + ' > Скорость: ',
-                  str(speed[check(angle - m,dir_data) - 1] * speed_w),end=' ')
-            if angle - m > 360:
-                angle-=360
-            if angle - m < 0:
-                angle+=360
-            print('Направление: ' + str(angle - m)
-                  + ' Расстояние:' + str(dis) + ' nm')
+                  str(speed[0] * speed_w),end=' ')
+            print('Направление: ' + str(a)
+                  + ' Расстояние:' + str(round(storona1,2)) + ' nm')
             # Добавление результа к общему значению
-            total_len = total_len + dis * 2
-            total_time += dis / (speed[check(angle - m,dir_data) - 1] * speed_w)
+            total_len += storona1+storona3
+            total_time += (storona1+storona3)/(speed[0]*speed_w)
         else:
             # Если угол не в контрольной зоне, делается простой выввод 
             print('Расстояние: ' + str(round(distance(x,y,x_n,y_n),2)) + ' nm')
@@ -183,6 +185,7 @@ def start():
         round(total_time + penalty * (leg - 2 - no_pen),2)) + ' часов с '
           + str(round(penalty * (leg - 2 - no_pen),2)) + ' часа штрафа')
     print(79 * '=')
+    reset(nomer)
 
 
 def distance(a,b,c,d):
@@ -209,5 +212,10 @@ def check(a,b):
                 return i
     return 3
 
+def reset(a):
+    print()
+    if input('Хотите провести еще один расчет? ').lower() == 'да':
+        start(a+1)
 
-start()
+
+start(1)
